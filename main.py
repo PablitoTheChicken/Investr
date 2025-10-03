@@ -3,12 +3,9 @@ import openai
 import yfinance as yf
 import requests
 import re
-import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 from io import BytesIO
-import tempfile
-import os
 import json
 
 # --- CONFIGURATION ---
