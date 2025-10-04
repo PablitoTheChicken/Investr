@@ -216,7 +216,7 @@ def process_submission(submission):
         full_text = f"{title}\n{body}"
 
         sentiment_result = analyze_sentiment(full_text)
-        tickers = extract_tickers(full_text)
+        tickers = extract_tickers(title)
         tickers_info = {}
         
         for ticker in tickers:
