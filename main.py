@@ -9,6 +9,9 @@ from io import BytesIO
 import json
 import time
 from prawcore.exceptions import ServerError, RequestException, ResponseException
+from datetime import datetime, timezone, timedelta
+
+MIN_AGE_SECONDS = 60  # only process posts within the last 60 seconds
 
 # --- CONFIGURATION ---
 
@@ -229,6 +232,14 @@ def process_submission(submission):
     except Exception as e:
         print(f"Error processing submission '{submission.title}': {e}")
 
+def process_submission_if_new(submission):
+    post_time = datetime.fromtimestamp(submission.created_utc, tz=timezone.utc)
+    now = datetime.now(timezone.utc)
+    if (now - post_time).total_seconds() > MIN_AGE_SECONDS:
+        print(f"Skipping old post: {submission.title}")
+        return
+    process_submission(submission)
+
 # --- MAIN LOGIC WITH RETRY ---
 def main():
     print("Starting stream...")
@@ -239,10 +250,9 @@ def main():
         try:
             for submission in subreddit.stream.submissions(skip_existing=True, pause_after=0):
                 if submission is None:
-                    # Stream caught up, continue
                     continue
-                    
-                process_submission(submission)
+
+                process_submission_if_new(submission)
                 retry_delay = 5  # Reset delay on successful processing
                 
         except (ServerError, RequestException, ResponseException, ConnectionError) as e:
